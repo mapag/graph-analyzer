@@ -1,3 +1,4 @@
+from numpy.core.fromnumeric import trace
 import pandas as pd
 import talib
 import requests
@@ -6,6 +7,7 @@ import numpy as np
 from candle_rankings import candle_rankings
 from plotly.offline import plot
 import plotly.graph_objs as go
+import plotly.express as px
 
 KLINESURL = 'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m'
 
@@ -32,8 +34,10 @@ def recognize_candlestick(df):
 
     df['candlestick_pattern'] = np.nan
     df['candlestick_match_count'] = np.nan
+    df['ADX'] = talib.ADX(df['high'], df['low'], df['close'], timeperiod=14)
+
     for index, row in df.iterrows():
-        # no pattern found
+        #  no pattern found
         if len(row[candle_names]) - sum(row[candle_names] == 0) == 0:
             df.loc[index,'candlestick_pattern'] = "NO_PATTERN"
             df.loc[index, 'candlestick_match_count'] = 0
@@ -80,8 +84,8 @@ def recognize_candlestick(df):
     cols_to_drop = candle_names
     df.drop(cols_to_drop, axis = 1, inplace = True)
 
-    print(amount)
-    print(f'{((amount - 1000) / 1000) * 100}% de ganancia')
+    # print(amount)
+    # print(f'{((amount - 1000) / 1000) * 100}% de ganancia')
     return df
 
 candles = requests.get(KLINESURL).json()
@@ -118,22 +122,28 @@ l = df['low'].astype(float)
 c = df['close'].astype(float)
 p = df['candlestick_pattern'].map(lambda x: x.replace('CDL','').replace('_Bull',' ALZA').replace('_Bear',' BAJA').replace('NO_PATTERN','NO HAY PATRON').replace('2','').replace('3',''))
 
-trace = go.Candlestick(
+traceCandle = go.Candlestick(
             open=o,
             high=h,
             low=l,
             close=c,
             text=p)
-data = [trace]
 
-layout = {
+traceADX = px.line(df['ADX'], title='ADX')
+          
+dataCandle = [traceCandle]
+dataADX = [traceADX]
+
+layoutCandle = {
     'title': 'Pattern recognition',
     'yaxis': {'title': 'Price'},
     'xaxis': {'title': 'Index Number'},
 }
 
-fig = dict(data=data, layout=layout)
+fig = dict(data=dataCandle, layout=layoutCandle)
+
 plot(fig, filename='candlePatrons.html')
+traceADX.show()
 
 df.to_csv('TA.csv')
 print('Archivo generado.')
