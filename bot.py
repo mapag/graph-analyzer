@@ -12,7 +12,6 @@ import plotly.express as px
 KLINESURL = 'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m'
 
 def recognize_candlestick(df):
-    amount = 1000
     op = df['open'].astype(float)
     hi = df['high'].astype(float)
     lo = df['low'].astype(float)
@@ -35,6 +34,9 @@ def recognize_candlestick(df):
     df['candlestick_pattern'] = np.nan
     df['candlestick_match_count'] = np.nan
     df['ADX'] = talib.ADX(df['high'], df['low'], df['close'], timeperiod=14)
+    df['Momentum'] = talib.MOM(df['close'], timeperiod=14)
+    df['openTime'] = pd.to_datetime(df['openTime'], unit='ms')
+    df['closeTime'] = pd.to_datetime(df['closeTime'], unit='ms')
 
     for index, row in df.iterrows():
         #  no pattern found
@@ -53,12 +55,6 @@ def recognize_candlestick(df):
                 pattern = list(compress(row[candle_names].keys(), row[candle_names].values != 0))[0] + '_Bear'
                 df.loc[index, 'candlestick_pattern'] = pattern
                 df.loc[index, 'candlestick_match_count'] = 1
-            try:
-              diff = float(df['close'][index]) - float(df['close'][index+1])
-              percentage = diff / float(df['close'][index]) * 100
-              amount += amount * percentage / 100
-            finally:
-              continue
         # multiple patterns matched -- select best performance
         else:
             # filter out pattern names from bool list of values
@@ -74,12 +70,6 @@ def recognize_candlestick(df):
                 rank_index_best = rank_list.index(min(rank_list))
                 df.loc[index, 'candlestick_pattern'] = container[rank_index_best]
                 df.loc[index, 'candlestick_match_count'] = len(container)
-                try:
-                  diff = float(df['close'][index]) - float(df['close'][index+1])
-                  percentage = diff / float(df['close'][index]) * 100
-                  amount += amount * percentage / 100
-                finally: 
-                  continue
     # clean up candle columns
     cols_to_drop = candle_names
     df.drop(cols_to_drop, axis = 1, inplace = True)
@@ -110,8 +100,6 @@ df.pop('quoteAssetVolume')
 df.pop('numberOfTrades')
 df.pop('takerBuyBaseAssetVolume')
 df.pop('takerBuyQuoteAssetVolume')
-df.pop('openTime')
-df.pop('closeTime')
 df.pop('')
 
 recognize_candlestick(df)
@@ -130,9 +118,11 @@ traceCandle = go.Candlestick(
             text=p)
 
 traceADX = px.line(df['ADX'], title='ADX')
+traceMomentum = px.line(df['Momentum'], title='Momentum')
           
 dataCandle = [traceCandle]
 dataADX = [traceADX]
+dataMomentum = [traceMomentum]
 
 layoutCandle = {
     'title': 'Pattern recognition',
@@ -144,6 +134,7 @@ fig = dict(data=dataCandle, layout=layoutCandle)
 
 plot(fig, filename='candlePatrons.html')
 traceADX.show()
+traceMomentum.show()
 
 df.to_csv('TA.csv')
 print('Archivo generado.')
