@@ -31,12 +31,13 @@ def recognize_candlestick(df):
     for candle in candle_names:
         df[candle] = getattr(talib, candle)(op, hi, lo, cl)
 
+    df['openTime'] = pd.to_datetime(df['openTime'], unit='ms')
+    df['closeTime'] = pd.to_datetime(df['closeTime'], unit='ms')
     df['candlestick_pattern'] = np.nan
     df['candlestick_match_count'] = np.nan
     df['ADX'] = talib.ADX(df['high'], df['low'], df['close'], timeperiod=14)
     df['Momentum'] = talib.MOM(df['close'], timeperiod=14)
-    df['openTime'] = pd.to_datetime(df['openTime'], unit='ms')
-    df['closeTime'] = pd.to_datetime(df['closeTime'], unit='ms')
+    df['RSI'] = talib.RSI(df['close'], timeperiod=14)
 
     for index, row in df.iterrows():
         #  no pattern found
@@ -109,32 +110,6 @@ h = df['high'].astype(float)
 l = df['low'].astype(float)
 c = df['close'].astype(float)
 p = df['candlestick_pattern'].map(lambda x: x.replace('CDL','').replace('_Bull',' ALZA').replace('_Bear',' BAJA').replace('NO_PATTERN','NO HAY PATRON').replace('2','').replace('3',''))
-
-traceCandle = go.Candlestick(
-            open=o,
-            high=h,
-            low=l,
-            close=c,
-            text=p)
-
-traceADX = px.line(df['ADX'], title='ADX')
-traceMomentum = px.line(df['Momentum'], title='Momentum')
-          
-dataCandle = [traceCandle]
-dataADX = [traceADX]
-dataMomentum = [traceMomentum]
-
-layoutCandle = {
-    'title': 'Pattern recognition',
-    'yaxis': {'title': 'Price'},
-    'xaxis': {'title': 'Index Number'},
-}
-
-fig = dict(data=dataCandle, layout=layoutCandle)
-
-plot(fig, filename='candlePatrons.html')
-traceADX.show()
-traceMomentum.show()
 
 df.to_csv('TA.csv')
 print('Archivo generado.')
