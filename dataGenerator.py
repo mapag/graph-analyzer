@@ -9,7 +9,10 @@ from plotly.offline import plot
 import plotly.graph_objs as go
 import plotly.express as px
 
-KLINESURL = 'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m'
+SYMBOL = 'ETHUSDT'
+INTERVAL = '4h'
+
+KLINESURL = f'https://api.binance.com/api/v3/klines?symbol={SYMBOL}&interval={INTERVAL}'
 
 def recognize_candlestick(df):
     op = df['open'].astype(float)
