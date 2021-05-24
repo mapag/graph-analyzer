@@ -1,7 +1,7 @@
 import pandas as pd
 from numpy import diff
 from dataGenerator import init
-
+df = pd.read_csv('TA.csv')
 
 def rsiStrategy():
     amount = 1000
@@ -58,10 +58,4 @@ def MexicanStrategy():
         finally:
             continue
 
-
-try:
-    df = pd.read_csv('TA.csv')
-except IOError:
-    init()
-    print("File not accessible")
 MexicanStrategy()

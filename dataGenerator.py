@@ -8,11 +8,13 @@ from candle_rankings import candle_rankings
 from plotly.offline import plot
 import plotly.graph_objs as go
 import plotly.express as px
+import os
 
 SYMBOL = 'ETHUSDT'
 INTERVAL = '4h'
 
 KLINESURL = f'https://api.binance.com/api/v3/klines?symbol={SYMBOL}&interval={INTERVAL}'
+
 
 def recognize_candlestick(df):
     op = df['open'].astype(float)
@@ -28,7 +30,8 @@ def recognize_candlestick(df):
                      'CDLSTALLEDPATTERN',
                      'CDLKICKINGBYLENGTH')
 
-    candle_names = [candle for candle in candle_names if candle not in exclude_items]
+    candle_names = [
+        candle for candle in candle_names if candle not in exclude_items]
 
     # create columns for each candle
     for candle in candle_names:
@@ -45,24 +48,27 @@ def recognize_candlestick(df):
     for index, row in df.iterrows():
         #  no pattern found
         if len(row[candle_names]) - sum(row[candle_names] == 0) == 0:
-            df.loc[index,'candlestick_pattern'] = "NO_PATTERN"
+            df.loc[index, 'candlestick_pattern'] = "NO_PATTERN"
             df.loc[index, 'candlestick_match_count'] = 0
         # single pattern found
         elif len(row[candle_names]) - sum(row[candle_names] == 0) == 1:
             # bull pattern 100 or 200
             if any(row[candle_names].values > 0):
-                pattern = list(compress(row[candle_names].keys(), row[candle_names].values != 0))[0] + '_Bull'
+                pattern = list(compress(row[candle_names].keys(
+                ), row[candle_names].values != 0))[0] + '_Bull'
                 df.loc[index, 'candlestick_pattern'] = pattern
                 df.loc[index, 'candlestick_match_count'] = 1
               # bear pattern -100 or -200
             else:
-                pattern = list(compress(row[candle_names].keys(), row[candle_names].values != 0))[0] + '_Bear'
+                pattern = list(compress(row[candle_names].keys(
+                ), row[candle_names].values != 0))[0] + '_Bear'
                 df.loc[index, 'candlestick_pattern'] = pattern
                 df.loc[index, 'candlestick_match_count'] = 1
         # multiple patterns matched -- select best performance
         else:
             # filter out pattern names from bool list of values
-            patterns = list(compress(row[candle_names].keys(), row[candle_names].values != 0))
+            patterns = list(
+                compress(row[candle_names].keys(), row[candle_names].values != 0))
             container = []
             for pattern in patterns:
                 if row[pattern] > 0:
@@ -76,7 +82,7 @@ def recognize_candlestick(df):
                 df.loc[index, 'candlestick_match_count'] = len(container)
     # clean up candle columns
     cols_to_drop = candle_names
-    df.drop(cols_to_drop, axis = 1, inplace = True)
+    df.drop(cols_to_drop, axis=1, inplace=True)
 
     # print(amount)
     # print(f'{((amount - 1000) / 1000) * 100}% de ganancia')
@@ -115,9 +121,15 @@ def init():
     h = df['high'].astype(float)
     l = df['low'].astype(float)
     c = df['close'].astype(float)
-    p = df['candlestick_pattern'].map(lambda x: x.replace('CDL','').replace('_Bull',' ALZA').replace('_Bear',' BAJA').replace('NO_PATTERN','NO HAY PATRON').replace('2','').replace('3',''))
+    p = df['candlestick_pattern'].map(lambda x: x.replace('CDL', '').replace('_Bull', ' ALZA').replace(
+        '_Bear', ' BAJA').replace('NO_PATTERN', 'NO HAY PATRON').replace('2', '').replace('3', ''))
 
     df.to_csv('TA.csv')
     print('Archivo generado.')
 
-init()
+
+if os.path.isfile('TA.csv'):
+    print ("Uso data existente")
+else:
+    print ("Creo data")
+    init()
