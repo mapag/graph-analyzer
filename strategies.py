@@ -22,43 +22,45 @@ def rsiStrategy():
             if (row['RSI'] > maxRSI):
                 precioVenta = row['close']
                 if(precioCompra != 0 and precioCompra != precioVenta):
-                    print(
-                        f'{precioVenta} - {precioCompra} = {precioVenta - precioCompra} ({round(((precioVenta - precioCompra)/precioVenta) * 100,2)})%')
                     amount += amount * \
                         (((precioVenta - precioCompra)/precioVenta) * 100) / 100
                     precioCompra = 0
                     precioVenta = 0
-    print('RESULTADO FINAL', amount)
 
 def MexicanStrategy():
     y = []
-    tradeHistory = pd.DataFrame(columns=['amount', 'diferencia', 'tradePercentage'])
-    amount = 1000
+    countExitoso = 0
+    countFallido = 0
+    tradeHistory = pd.DataFrame(columns=['fecha', 'amount', 'diferencia', 'tradePercentage'])
+    amount = 10
     dydx = diff(df['Momentum'])
     hold = [False, 0]
     for index, elem in enumerate(dydx):
         try:
             if(elem > 0 and dydx[index + 1] < 0):
-                if(df['ADX'][index] > 23):
-                    valAnterior = hold[1]
-                    hold[1] = df['close'][index]
+                if(df['ADX'][index] > 23 and df['close'][index] > hold[1]):
+                    valCompra = hold[1]
+                    valVenta = df['close'][index]
                     if(hold[0]):
-                        hold[0] = False
-                        tradePercentage = (((valAnterior-hold[1])/max([valAnterior, hold[1]])))
+                        tradePercentage = (((valVenta-valCompra)/max([valCompra, valVenta])))
                         diferencia = (amount * tradePercentage)
+                        if(diferencia > 0):
+                          countExitoso += 1
+                        else:
+                          countFallido += 1
                         amount += diferencia
-
                         new_row = pd.DataFrame([[round(amount, 2), round(diferencia,2), round(tradePercentage * 100, 2)]], columns=['amount', 'diferencia', 'tradePercentage'])
                         tradeHistory = tradeHistory.append(new_row, ignore_index=True)
-
+                        hold[0] = False
+                        hold[1] = 0
             elif (elem < 0 and dydx[index + 1] > 0):
-                if(df['ADX'][index] > 23):
+                if(df['ADX'][index] > 23 and not hold[0]):
                     hold = [True, df['close'][index]]
         finally:
             continue
-
-    print('resultado:', tradeHistory)
     fecha = str(datetime.datetime.now()).replace("-", "_").replace(":", "_").split(".")[0]
     tradeHistory.to_excel( fr'./out/{fecha}.xlsx', sheet_name= 'tradeHistory')
+    print('Operaciones positivas', countExitoso)
+    print('Operaciones negativas', countFallido)
 
 MexicanStrategy()

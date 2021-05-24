@@ -48,7 +48,7 @@ htmlcov/
 .nox/
 .coverage
 .coverage.*
-.cache
+.cacheR
 nosetests.xml
 coverage.xml
 *.cover
@@ -152,5 +152,7 @@ Thumbs.db
 # profiling data
 .prof
 
+viejardo/
+out/
 
 # End of https://www.toptal.com/developers/gitignore/api/python

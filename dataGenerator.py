@@ -9,11 +9,11 @@ from plotly.offline import plot
 import plotly.graph_objs as go
 import plotly.express as px
 import os
+import datetime as dt
 from termcolor import colored
 
-SYMBOL = 'ETHUSDT'
-INTERVAL = '4h'
-
+SYMBOL = 'BTCUSDT'
+INTERVAL = '1m'
 
 def recognize_candlestick(df):
     op = df['open'].astype(float)
@@ -90,7 +90,7 @@ def recognize_candlestick(df):
 
 def init():
 
-    KLINESURL = f'https://api.binance.com/api/v3/klines?symbol={SYMBOL}&interval={INTERVAL}'
+    KLINESURL = f'https://api.binance.com/api/v3/klines?symbol={SYMBOL}&interval={INTERVAL}&limit=1000&startTime={int(dt.datetime(2021,5,17).timestamp()*1000)}'
 
     candles = requests.get(KLINESURL).json()
 
@@ -126,6 +126,7 @@ def init():
         '_Bear', ' BAJA').replace('NO_PATTERN', 'NO HAY PATRON').replace('2', '').replace('3', ''))
 
     df.to_csv('TA.csv')
+    print('Archivo generado con exito')
 
 
 probando = 'Probando ' + SYMBOL + ' en intervalos de '+ INTERVAL
