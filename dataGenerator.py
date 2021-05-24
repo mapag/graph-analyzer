@@ -9,10 +9,10 @@ from plotly.offline import plot
 import plotly.graph_objs as go
 import plotly.express as px
 import os
+from termcolor import colored
 
 SYMBOL = 'ETHUSDT'
 INTERVAL = '4h'
-
 
 
 def recognize_candlestick(df):
@@ -128,4 +128,7 @@ def init():
     df.to_csv('TA.csv')
     print('Archivo generado.')
 
+
+probando = 'Probando ' + SYMBOL + ' en intervalos de '+ INTERVAL
+print(colored(probando, 'cyan'))
 init()

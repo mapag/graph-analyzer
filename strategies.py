@@ -50,8 +50,7 @@ def MexicanStrategy():
                             ((valAnterior-hold[1])/max([valAnterior, hold[1]])))
                         diferencia = (amount * tradePercentage)
                         amount += diferencia
-                        print(round(
-                            amount, 2), f'|| {round(diferencia,2)} ||', f'{round(tradePercentage * 100, 2)}%')
+                        print(round(amount, 2), f'|| {round(diferencia,2)} ||', f'{round(tradePercentage * 100, 2)}%')
             elif (elem < 0 and dydx[index + 1] > 0):
                 if(df['ADX'][index] > 23):
                     hold = [True, df['close'][index]]
