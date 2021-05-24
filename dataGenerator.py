@@ -82,39 +82,42 @@ def recognize_candlestick(df):
     # print(f'{((amount - 1000) / 1000) * 100}% de ganancia')
     return df
 
-candles = requests.get(KLINESURL).json()
 
-df = pd.DataFrame(candles, columns=(
-    'openTime',
-    'open',
-    'high',
-    'low',
-    'close',
-    'volume',
-    'closeTime',
-    'quoteAssetVolume',
-    'numberOfTrades',
-    'takerBuyBaseAssetVolume',
-    'takerBuyQuoteAssetVolume',
-    ''
-))
+def init():
 
-df.pop('volume')
-df.pop('quoteAssetVolume')
-df.pop('numberOfTrades')
-df.pop('takerBuyBaseAssetVolume')
-df.pop('takerBuyQuoteAssetVolume')
-df.pop('')
+    candles = requests.get(KLINESURL).json()
 
-recognize_candlestick(df)
+    df = pd.DataFrame(candles, columns=(
+        'openTime',
+        'open',
+        'high',
+        'low',
+        'close',
+        'volume',
+        'closeTime',
+        'quoteAssetVolume',
+        'numberOfTrades',
+        'takerBuyBaseAssetVolume',
+        'takerBuyQuoteAssetVolume',
+        ''
+    ))
 
-o = df['open'].astype(float)
-h = df['high'].astype(float)
-l = df['low'].astype(float)
-c = df['close'].astype(float)
-p = df['candlestick_pattern'].map(lambda x: x.replace('CDL','').replace('_Bull',' ALZA').replace('_Bear',' BAJA').replace('NO_PATTERN','NO HAY PATRON').replace('2','').replace('3',''))
+    df.pop('volume')
+    df.pop('quoteAssetVolume')
+    df.pop('numberOfTrades')
+    df.pop('takerBuyBaseAssetVolume')
+    df.pop('takerBuyQuoteAssetVolume')
+    df.pop('')
 
-df.to_csv('TA.csv')
-print('Archivo generado.')
+    recognize_candlestick(df)
 
+    o = df['open'].astype(float)
+    h = df['high'].astype(float)
+    l = df['low'].astype(float)
+    c = df['close'].astype(float)
+    p = df['candlestick_pattern'].map(lambda x: x.replace('CDL','').replace('_Bull',' ALZA').replace('_Bear',' BAJA').replace('NO_PATTERN','NO HAY PATRON').replace('2','').replace('3',''))
 
+    df.to_csv('TA.csv')
+    print('Archivo generado.')
+
+init()
