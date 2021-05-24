@@ -13,7 +13,6 @@ import os
 SYMBOL = 'ETHUSDT'
 INTERVAL = '4h'
 
-KLINESURL = f'https://api.binance.com/api/v3/klines?symbol={SYMBOL}&interval={INTERVAL}'
 
 
 def recognize_candlestick(df):
@@ -91,6 +90,8 @@ def recognize_candlestick(df):
 
 def init():
 
+    KLINESURL = f'https://api.binance.com/api/v3/klines?symbol={SYMBOL}&interval={INTERVAL}'
+
     candles = requests.get(KLINESURL).json()
 
     df = pd.DataFrame(candles, columns=(
@@ -127,9 +128,4 @@ def init():
     df.to_csv('TA.csv')
     print('Archivo generado.')
 
-
-if os.path.isfile('TA.csv'):
-    print ("Uso data existente")
-else:
-    print ("Creo data")
-    init()
+init()
