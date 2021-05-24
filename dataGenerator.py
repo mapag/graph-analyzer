@@ -126,7 +126,6 @@ def init():
         '_Bear', ' BAJA').replace('NO_PATTERN', 'NO HAY PATRON').replace('2', '').replace('3', ''))
 
     df.to_csv('TA.csv')
-    print('Archivo generado.')
 
 
 probando = 'Probando ' + SYMBOL + ' en intervalos de '+ INTERVAL

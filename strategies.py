@@ -1,6 +1,8 @@
 import pandas as pd
 from numpy import diff
 from dataGenerator import init
+import datetime
+
 df = pd.read_csv('TA.csv')
 
 def rsiStrategy():
@@ -28,15 +30,11 @@ def rsiStrategy():
                     precioVenta = 0
     print('RESULTADO FINAL', amount)
 
-
 def MexicanStrategy():
     y = []
-    count = []
+    tradeHistory = pd.DataFrame(columns=['amount', 'diferencia', 'tradePercentage'])
     amount = 1000
-    for index, row in df.iterrows():
-        y.append(row['Momentum'])
-        count.append(1)
-    dydx = diff(y)/diff(count)
+    dydx = diff(df['Momentum'])
     hold = [False, 0]
     for index, elem in enumerate(dydx):
         try:
@@ -46,15 +44,21 @@ def MexicanStrategy():
                     hold[1] = df['close'][index]
                     if(hold[0]):
                         hold[0] = False
-                        tradePercentage = (
-                            ((valAnterior-hold[1])/max([valAnterior, hold[1]])))
+                        tradePercentage = (((valAnterior-hold[1])/max([valAnterior, hold[1]])))
                         diferencia = (amount * tradePercentage)
                         amount += diferencia
-                        print(round(amount, 2), f'|| {round(diferencia,2)} ||', f'{round(tradePercentage * 100, 2)}%')
+
+                        new_row = pd.DataFrame([[round(amount, 2), round(diferencia,2), round(tradePercentage * 100, 2)]], columns=['amount', 'diferencia', 'tradePercentage'])
+                        tradeHistory = tradeHistory.append(new_row, ignore_index=True)
+
             elif (elem < 0 and dydx[index + 1] > 0):
                 if(df['ADX'][index] > 23):
                     hold = [True, df['close'][index]]
         finally:
             continue
+
+    print('resultado:', tradeHistory)
+    fecha = str(datetime.datetime.now()).replace("-", "_").replace(":", "_").split(".")[0]
+    tradeHistory.to_excel( fr'./out/{fecha}.xlsx', sheet_name= 'tradeHistory')
 
 MexicanStrategy()
