@@ -42,6 +42,7 @@ def MexicanStrategy():
                     valCompra = hold[1]
                     valVenta = df['close'][index]
                     if(hold[0]):
+                        print(f'Salgo de crypto a precio {valVenta}')
                         tradePercentage = (((valVenta-valCompra)/max([valCompra, valVenta])))
                         diferencia = (amount * tradePercentage)
                         if(diferencia > 0):
@@ -56,11 +57,16 @@ def MexicanStrategy():
             elif (elem < 0 and dydx[index + 1] > 0):
                 if(df['ADX'][index] > 23 and not hold[0]):
                     hold = [True, df['close'][index]]
+                    valCompra = hold[1]
+                    print(f'Entro a crypto a precio {valCompra}, ')
         finally:
             continue
     fecha = str(datetime.datetime.now()).replace("-", "_").replace(":", "_").split(".")[0]
     tradeHistory.to_excel( fr'./out/{fecha}.xlsx', sheet_name= 'tradeHistory')
     print('Operaciones positivas', countExitoso)
     print('Operaciones negativas', countFallido)
-
+    if(hold[0]):
+        print('El capital quedo en crypto, a holdear, puto!')
+    else:
+        print('El capital quedo en dolares')
 MexicanStrategy()
