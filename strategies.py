@@ -1,6 +1,6 @@
 import pandas as pd
 from numpy import diff
-from dataGenerator import init
+# from dataGenerator import init
 import datetime
 
 df = pd.read_csv('TA.csv')
@@ -49,7 +49,7 @@ def MexicanStrategy():
                         else:
                           countFallido += 1
                         amount += diferencia
-                        new_row = pd.DataFrame([[round(amount, 2), round(diferencia,2), round(tradePercentage * 100, 2)]], columns=['amount', 'diferencia', 'tradePercentage'])
+                        new_row = pd.DataFrame([[df['closeTime'][index], round(amount, 2), round(diferencia,2), round(tradePercentage * 100, 2)]], columns=['fecha', 'amount', 'diferencia', 'tradePercentage'])
                         tradeHistory = tradeHistory.append(new_row, ignore_index=True)
                         hold[0] = False
                         hold[1] = 0

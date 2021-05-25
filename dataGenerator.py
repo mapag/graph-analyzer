@@ -9,11 +9,12 @@ from plotly.offline import plot
 import plotly.graph_objs as go
 import plotly.express as px
 import os
-import datetime as dt
+from datetime import datetime, timedelta
 from termcolor import colored
+import time
 
 SYMBOL = 'BTCUSDT'
-INTERVAL = '1m'
+INTERVAL = '4h'
 
 def recognize_candlestick(df):
     op = df['open'].astype(float)
@@ -89,46 +90,53 @@ def recognize_candlestick(df):
 
 
 def init():
+    dfs = []
+    DIAS_PARA_ATRAS = 30
+    for index in range(1,DIAS_PARA_ATRAS):
+      KLINESURL = f'https://api.binance.com/api/v3/klines?symbol={SYMBOL}&interval={INTERVAL}&limit=1000&startTime={int((datetime.now() - timedelta(days=index+1)).timestamp()*1000)}&endTime={int((datetime.now() - timedelta(days=index)).timestamp()*1000)}'
+      candles = requests.get(KLINESURL).json()
+      print(f'Esperando un momento para que binance no nos banee. Quedan {DIAS_PARA_ATRAS - index} días restantes...')
+      time.sleep(2)
 
-    KLINESURL = f'https://api.binance.com/api/v3/klines?symbol={SYMBOL}&interval={INTERVAL}&limit=1000&startTime={int(dt.datetime(2021,5,17).timestamp()*1000)}'
+      df = pd.DataFrame(candles, columns=(
+          'openTime',
+          'open',
+          'high',
+          'low',
+          'close',
+          'volume',
+          'closeTime',
+          'quoteAssetVolume',
+          'numberOfTrades',
+          'takerBuyBaseAssetVolume',
+          'takerBuyQuoteAssetVolume',
+          ''
+      ))
 
-    candles = requests.get(KLINESURL).json()
+      df.pop('volume')
+      df.pop('quoteAssetVolume')
+      df.pop('numberOfTrades')
+      df.pop('takerBuyBaseAssetVolume')
+      df.pop('takerBuyQuoteAssetVolume')
+      df.pop('')
 
-    df = pd.DataFrame(candles, columns=(
-        'openTime',
-        'open',
-        'high',
-        'low',
-        'close',
-        'volume',
-        'closeTime',
-        'quoteAssetVolume',
-        'numberOfTrades',
-        'takerBuyBaseAssetVolume',
-        'takerBuyQuoteAssetVolume',
-        ''
-    ))
+      recognize_candlestick(df)
 
-    df.pop('volume')
-    df.pop('quoteAssetVolume')
-    df.pop('numberOfTrades')
-    df.pop('takerBuyBaseAssetVolume')
-    df.pop('takerBuyQuoteAssetVolume')
-    df.pop('')
+      o = df['open'].astype(float)
+      h = df['high'].astype(float)
+      l = df['low'].astype(float)
+      c = df['close'].astype(float)
+      p = df['candlestick_pattern'].map(lambda x: x.replace('CDL', '').replace('_Bull', ' ALZA').replace(
+          '_Bear', ' BAJA').replace('NO_PATTERN', 'NO HAY PATRON').replace('2', '').replace('3', ''))
 
-    recognize_candlestick(df)
+      dfs.append(df)
 
-    o = df['open'].astype(float)
-    h = df['high'].astype(float)
-    l = df['low'].astype(float)
-    c = df['close'].astype(float)
-    p = df['candlestick_pattern'].map(lambda x: x.replace('CDL', '').replace('_Bull', ' ALZA').replace(
-        '_Bear', ' BAJA').replace('NO_PATTERN', 'NO HAY PATRON').replace('2', '').replace('3', ''))
+    dfs = reversed(dfs)
+    finaldf = pd.concat(dfs)
 
-    df.to_csv('TA.csv')
+    finaldf.to_csv('TA.csv')
     print('Archivo generado con exito')
 
 
 probando = 'Probando ' + SYMBOL + ' en intervalos de '+ INTERVAL
-print(colored(probando, 'cyan'))
 init()
