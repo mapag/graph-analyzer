@@ -91,10 +91,15 @@ def recognize_candlestick(df):
 
 def init():
     dfs = []
-    DIAS_PARA_ATRAS = 30
+    DIAS_PARA_ATRAS = 3
     for index in range(1,DIAS_PARA_ATRAS):
-      KLINESURL = f'https://api.binance.com/api/v3/klines?symbol={SYMBOL}&interval={INTERVAL}&limit=1000&startTime={int((datetime.now() - timedelta(days=index+1)).timestamp()*1000)}&endTime={int((datetime.now() - timedelta(days=index)).timestamp()*1000)}'
+      
+      startTime = int((datetime.now() - timedelta(days=index+1)).timestamp()*1000)
+      endTime = int((datetime.now() - timedelta(days=index)).timestamp()*1000)
+      
+      KLINESURL = f'https://api.binance.com/api/v3/klines?symbol={SYMBOL}&interval={INTERVAL}&limit=1000&startTime={startTime}&endTime={endTime}'
       candles = requests.get(KLINESURL).json()
+
       print(f'Esperando un momento para que binance no nos banee. Quedan {DIAS_PARA_ATRAS - index} días restantes...')
       time.sleep(2)
 
